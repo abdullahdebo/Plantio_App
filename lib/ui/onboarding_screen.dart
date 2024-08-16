@@ -3,8 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plantio_app/constants.dart';
-
-import 'login.dart';
+import 'package:plantio_app/ui/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -29,9 +28,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             padding: EdgeInsets.only(right: 20, top: 20),
             child: InkWell(
               onTap: () {
-                //changed Later on To pushREblesment
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => Login()));
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (_) => LoginScreen()));
               }, //To Login Screen
               child: Text(
                 'Skip',
@@ -194,8 +192,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             curve: Curves.easeIn);
                       }
                     } else {
-                      Navigator.pushReplacement(
-                          context, MaterialPageRoute(builder: (_) => Login()));
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder: (_) => LoginScreen()));
                     }
                   });
                 },
