@@ -1,23 +1,22 @@
-// ignore_for_file: unused_import
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantio_app/ui/signup_screen.dart';
-import 'package:plantio_app/ui/splash_screen.dart';
+import 'package:plantio_app/ui/login_screen.dart';
 
 import '../constants.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   // To Control User Inputs
-  TextEditingController logInEmailController = TextEditingController();
-  TextEditingController logInPassWordController = TextEditingController();
+  TextEditingController signUpFirstNameController = TextEditingController();
+  TextEditingController signUpLastNameController = TextEditingController();
+  TextEditingController signUpEmailController = TextEditingController();
+  TextEditingController signUpPassWordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 50),
+                  padding: EdgeInsets.only(top: 10),
                   child: Text(
-                    'LogIn',
+                    'SignUp',
                     style: GoogleFonts.rubik(
                       color: Constants.primaryColor,
                       fontSize: 50,
@@ -42,13 +41,52 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Image.asset(
-                  'assets/images/4.png',
+                  'assets/images/5.png',
                   height: 300,
                   width: 300,
                 ),
                 SizedBox(height: 2),
                 TextField(
-                  controller: logInEmailController,
+                  controller: signUpFirstNameController,
+                  keyboardType: TextInputType.name,
+                  decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.person, color: Constants.primaryColor),
+                    hintText: 'First Name',
+                    hintStyle: GoogleFonts.rubik(
+                      color: Constants.primaryColor,
+                    ),
+                    filled: true,
+                    fillColor: Constants.mushroomColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: signUpLastNameController,
+                  keyboardType: TextInputType.name,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    prefixIcon:
+                        Icon(Icons.person, color: Constants.primaryColor),
+                    hintText: 'Last Name',
+                    hintStyle: GoogleFonts.rubik(
+                      color: Constants.primaryColor,
+                    ),
+                    filled: true,
+                    fillColor: Constants.mushroomColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: signUpEmailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     prefixIcon:
@@ -67,12 +105,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: 10),
                 TextField(
-                  controller: logInPassWordController,
+                  controller: signUpPassWordController,
                   keyboardType: TextInputType.number,
-                  obscureText: true,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.lock, color: Constants.primaryColor),
-                    hintText: 'Password',
+                    hintText: 'PassWord',
                     hintStyle: GoogleFonts.rubik(
                       color: Constants.primaryColor,
                     ),
@@ -85,17 +122,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'Forgot Password?',
-                    style: TextStyle(
-                      color: Constants.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
@@ -106,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   child: Text(
-                    'Login',
+                    'SignUp',
                     style: TextStyle(
                       fontSize: 20,
                       color: Constants.blanketColor,
@@ -118,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account?",
+                      'You have an account?',
                       style: GoogleFonts.rubik(
                         color: Constants.khakiMossColor,
                         fontSize: 16,
@@ -128,10 +154,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(context,
-                            MaterialPageRoute(builder: (_) => SignupScreen()));
+                            MaterialPageRoute(builder: (_) => LoginScreen()));
                       },
                       child: Text(
-                        'Sign Up',
+                        'Log In',
                         style: GoogleFonts.rubik(
                           color: Constants.primaryColor,
                           fontSize: 20,

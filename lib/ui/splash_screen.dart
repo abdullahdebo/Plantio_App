@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
 // This Function For Delayed The Splash Screen After That We are Going To OnboardingScreen
   void navigatorAfterDuration() {
-    Future.delayed(Duration(seconds: 6), () {
+    Future.delayed(Duration(seconds: 5), () {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => OnboardingScreen()));
     });
