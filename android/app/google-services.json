@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "72034132711",
+    "project_id": "plantio-app-4b746",
+    "storage_bucket": "plantio-app-4b746.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72034132711:android:e4b4b25804d8da2dc83842",
+        "android_client_info": {
+          "package_name": "com.example.plantio_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7KOKKDIC5rUBvThNZ0K-HOEkKspbnqDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
