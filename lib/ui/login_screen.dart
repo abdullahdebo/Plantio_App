@@ -1,7 +1,10 @@
 // ignore_for_file: unused_import
 
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:plantio_app/snackBar.dart';
+import 'package:plantio_app/ui/home_page.dart';
 import 'package:plantio_app/ui/signup_screen.dart';
 import 'package:plantio_app/ui/splash_screen.dart';
 
@@ -97,7 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: 40),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    userLogInInputValidation(
+                        context, logInEmailController, logInPassWordController);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Constants.primaryColor,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
@@ -107,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Text(
                     'Login',
-                    style: TextStyle(
+                    style: GoogleFonts.rubik(
                       fontSize: 20,
                       color: Constants.blanketColor,
                     ),
@@ -147,5 +153,20 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+}
+
+/// Validates user login input fields and displays appropriate snack messages based on the validation results.
+void userLogInInputValidation(BuildContext context,
+    dynamic logInEmailController, dynamic logInPassWordController) {
+  if (logInEmailController.text.isEmpty ||
+      logInEmailController.text.contains('@') == false ||
+      logInEmailController.text.contains('.com') == false) {
+    brownSnak(context, 'invalid email ☹');
+  } else if (logInPassWordController.text.isEmpty ||
+      logInPassWordController.text.length < 6) {
+    brownSnak(context, 'password too short ☹');
+  } else {
+    greenSnak(context, 'Validation Completed😍');
   }
 }

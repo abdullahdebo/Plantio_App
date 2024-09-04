@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:plantio_app/snackBar.dart';
 import 'package:plantio_app/ui/login_screen.dart';
 
 import '../constants.dart';
@@ -30,7 +31,7 @@ class _SignupScreenState extends State<SignupScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 10),
+                  padding: EdgeInsets.only(top: 30),
                   child: Text(
                     'SignUp',
                     style: GoogleFonts.rubik(
@@ -68,7 +69,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextField(
                   controller: signUpLastNameController,
                   keyboardType: TextInputType.name,
-                  obscureText: true,
+                  obscureText: false,
                   decoration: InputDecoration(
                     prefixIcon:
                         Icon(Icons.person, color: Constants.primaryColor),
@@ -107,9 +108,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextField(
                   controller: signUpPassWordController,
                   keyboardType: TextInputType.number,
+                  obscureText: true,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.lock, color: Constants.primaryColor),
-                    hintText: 'PassWord',
+                    hintText: 'Password',
                     hintStyle: GoogleFonts.rubik(
                       color: Constants.primaryColor,
                     ),
@@ -123,7 +125,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    userSignUpInputValidation(
+                        context,
+                        signUpFirstNameController,
+                        signUpLastNameController,
+                        signUpEmailController,
+                        signUpPassWordController);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Constants.primaryColor,
                     padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
@@ -133,7 +142,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   child: Text(
                     'SignUp',
-                    style: TextStyle(
+                    style: GoogleFonts.rubik(
                       fontSize: 20,
                       color: Constants.blanketColor,
                     ),
@@ -173,5 +182,30 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
+  }
+}
+
+/// Validates user sign-up input fields and displays appropriate snack messages based on the validation results.
+void userSignUpInputValidation(
+    BuildContext context,
+    TextEditingController signUpFirstNameController,
+    TextEditingController signUpLastNameController,
+    TextEditingController signUpEmailController,
+    TextEditingController signUpPasswordController) {
+  if (signUpFirstNameController.text.isEmpty ||
+      signUpFirstNameController.text.length < 3) {
+    brownSnak(context, 'Invalid First Name ☹');
+  } else if (signUpLastNameController.text.isEmpty ||
+      signUpLastNameController.text.length < 3) {
+    brownSnak(context, 'Invalid Last Name ☹');
+  } else if (signUpEmailController.text.isEmpty ||
+      !signUpEmailController.text.contains('@') ||
+      !signUpEmailController.text.endsWith('.com')) {
+    brownSnak(context, 'Invalid Email ☹');
+  } else if (signUpPasswordController.text.isEmpty ||
+      signUpPasswordController.text.length < 6) {
+    brownSnak(context, 'Invalid Password ☹');
+  } else {
+    greenSnak(context, 'Validation Completed 🤗');
   }
 }
