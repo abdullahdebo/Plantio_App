@@ -1,6 +1,8 @@
 // ignore_for_file: unused_import
 
 import 'dart:ffi';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plantio_app/snackBar.dart';
@@ -157,16 +159,50 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 /// Validates user login input fields and displays appropriate snack messages based on the validation results.
-void userLogInInputValidation(BuildContext context,
-    dynamic logInEmailController, dynamic logInPassWordController) {
+void userLogInInputValidation(
+  BuildContext context,
+  TextEditingController logInEmailController,
+  TextEditingController logInPassWordController,
+) {
+  // Email validation
   if (logInEmailController.text.isEmpty ||
-      logInEmailController.text.contains('@') == false ||
-      logInEmailController.text.contains('.com') == false) {
-    brownSnak(context, 'invalid email ☹');
-  } else if (logInPassWordController.text.isEmpty ||
+      !logInEmailController.text.contains('@') ||
+      !logInEmailController.text.endsWith('.com')) {
+    brownSnak(context, 'Invalid email ☹');
+  }
+  // Password validation
+  else if (logInPassWordController.text.isEmpty ||
       logInPassWordController.text.length < 6) {
-    brownSnak(context, 'password too short ☹');
-  } else {
+    brownSnak(context, 'Password too short ☹');
+  }
+  // Successful validation
+  else {
+    print('Validation Completed');
     greenSnak(context, 'Validation Completed😍');
+
+    // Delayed execution for login
+    Future.delayed(Duration(seconds: 2), () {
+      loginUser(logInEmailController, logInPassWordController);
+    });
+  }
+}
+
+// This function logs in the user using Firebase Authentication with the provided email and password
+// and prints the user ID if login is successful.
+Future loginUser(
+    dynamic logInEmailController, dynamic logInPassWordController) async {
+  try {
+    await FirebaseAuth.instance
+        .signInWithEmailAndPassword(
+      email: logInEmailController.text,
+      password: logInPassWordController.text,
+    )
+        .then((value) {
+      if (value.user?.uid != null) {
+        print('UserId =  ${value.user!.uid}');
+      }
+    });
+  } on FirebaseAuthException catch (e) {
+    print(e.message);
   }
 }

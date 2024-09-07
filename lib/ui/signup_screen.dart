@@ -1,3 +1,7 @@
+// ignore_for_file: unused_import, unused_local_variable
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plantio_app/snackBar.dart';
@@ -127,11 +131,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 ElevatedButton(
                   onPressed: () {
                     userSignUpInputValidation(
-                        context,
-                        signUpFirstNameController,
-                        signUpLastNameController,
-                        signUpEmailController,
-                        signUpPassWordController);
+                      context,
+                      signUpFirstNameController,
+                      signUpLastNameController,
+                      signUpEmailController,
+                      signUpPassWordController,
+                      signUpPassWordController,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Constants.primaryColor,
@@ -191,21 +197,85 @@ void userSignUpInputValidation(
     TextEditingController signUpFirstNameController,
     TextEditingController signUpLastNameController,
     TextEditingController signUpEmailController,
-    TextEditingController signUpPasswordController) {
+    TextEditingController signUpPasswordController,
+    TextEditingController signUpPassWordController) {
+  // FirstName validation
   if (signUpFirstNameController.text.isEmpty ||
       signUpFirstNameController.text.length < 3) {
-    brownSnak(context, 'Invalid First Name ☹');
+    brownSnak(context, 'Please Enter Your First Name ☹');
+    // LastNAme validation
   } else if (signUpLastNameController.text.isEmpty ||
       signUpLastNameController.text.length < 3) {
-    brownSnak(context, 'Invalid Last Name ☹');
+    brownSnak(context, 'Please Enter Your Last Name ☹');
+    // Email validation
   } else if (signUpEmailController.text.isEmpty ||
       !signUpEmailController.text.contains('@') ||
       !signUpEmailController.text.endsWith('.com')) {
-    brownSnak(context, 'Invalid Email ☹');
+    brownSnak(context, 'Please Enter Your Email ☹');
+    // Password validation
   } else if (signUpPasswordController.text.isEmpty ||
       signUpPasswordController.text.length < 6) {
-    brownSnak(context, 'Invalid Password ☹');
+    brownSnak(context, 'Password is too weak ☹');
+    // Successful validation
   } else {
-    greenSnak(context, 'Validation Completed 🤗');
+    greenSnak(context, 'Creating Your Account🤗');
+    // Delayed execution for signUpAndCreateUserAccount
+    Future.delayed(Duration(seconds: 2), () {
+      signUpAndCreateUserAccount(
+        signUpFirstNameController,
+        signUpLastNameController,
+        signUpEmailController,
+        signUpPassWordController,
+      );
+    });
+  }
+}
+
+// This function signs up a new user, creates a Firestore user account with additional details
+// and handles errors by deleting the account if creation fails.
+Future signUpAndCreateUserAccount(
+  TextEditingController signUpFirstNameController,
+  TextEditingController signUpLastNameController,
+  TextEditingController signUpEmailController,
+  TextEditingController signUpPassWordController,
+) async {
+  DocumentSnapshot<Map<String, dynamic>> userData;
+  try {
+    await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+      email: signUpEmailController.text,
+      password: signUpPassWordController.text,
+    )
+        .then((userCredential) async {
+      if (userCredential.user != null) {
+        userCredential.user?.sendEmailVerification().then((metaData) async {
+          try {
+            await FirebaseFirestore.instance
+                .collection('UserAccounts')
+                .doc(userCredential.user?.uid)
+                .set({
+              'UserId': userCredential.user?.uid,
+              'UserFirstName': signUpFirstNameController.text,
+              'UserLastName': signUpLastNameController.text,
+              'UserEmail': userCredential.user?.email,
+              'AccountCreatedDateTime': DateTime.now(),
+            }).then((value) async {
+              userData = await FirebaseFirestore.instance
+                  .collection('UserAccounts')
+                  .doc(userCredential.user?.uid)
+                  .get();
+            });
+          } catch (e) {
+            FirebaseAuth.instance.currentUser?.delete().then((value) async {
+              await FirebaseAuth.instance.signOut().then((value) {
+                print('Error occurred');
+              });
+            });
+          }
+        });
+      }
+    });
+  } on FirebaseAuthException catch (e) {
+    print(e.message);
   }
 }
