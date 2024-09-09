@@ -35,10 +35,10 @@ class _SignupScreenState extends State<SignupScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 30),
+                  padding: EdgeInsets.only(top: 50),
                   child: Text(
-                    'SignUp',
-                    style: GoogleFonts.rubik(
+                    'Sign Up',
+                    style: GoogleFonts.merriweather(
                       color: Constants.primaryColor,
                       fontSize: 50,
                       fontWeight: FontWeight.bold,
@@ -47,8 +47,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 Image.asset(
                   'assets/images/5.png',
-                  height: 300,
-                  width: 300,
+                  height: 270,
+                  width: 270,
                 ),
                 SizedBox(height: 2),
                 TextField(
@@ -222,6 +222,7 @@ void userSignUpInputValidation(
     // Delayed execution for signUpAndCreateUserAccount
     Future.delayed(Duration(seconds: 2), () {
       signUpAndCreateUserAccount(
+        context,
         signUpFirstNameController,
         signUpLastNameController,
         signUpEmailController,
@@ -234,6 +235,7 @@ void userSignUpInputValidation(
 // This function signs up a new user, creates a Firestore user account with additional details
 // and handles errors by deleting the account if creation fails.
 Future signUpAndCreateUserAccount(
+  BuildContext context,
   TextEditingController signUpFirstNameController,
   TextEditingController signUpLastNameController,
   TextEditingController signUpEmailController,
@@ -248,7 +250,9 @@ Future signUpAndCreateUserAccount(
     )
         .then((userCredential) async {
       if (userCredential.user != null) {
-        userCredential.user?.sendEmailVerification().then((metaData) async {
+        await userCredential.user
+            ?.sendEmailVerification()
+            .then((metaData) async {
           try {
             await FirebaseFirestore.instance
                 .collection('UserAccounts')
@@ -259,16 +263,29 @@ Future signUpAndCreateUserAccount(
               'UserLastName': signUpLastNameController.text,
               'UserEmail': userCredential.user?.email,
               'AccountCreatedDateTime': DateTime.now(),
+              'IsEmailVerified': false,
             }).then((value) async {
               userData = await FirebaseFirestore.instance
                   .collection('UserAccounts')
                   .doc(userCredential.user?.uid)
                   .get();
             });
+            signUpFirstNameController.clear();
+            signUpLastNameController.clear();
+            signUpEmailController.clear();
+            signUpPassWordController.clear();
+            await FirebaseAuth.instance.signOut();
+            greenSnak(context, 'Verification Email Sent ✔');
+            // Navigate to login screen after 2 seconds
+            Future.delayed(Duration(seconds: 2), () {
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (_) => LoginScreen()));
+            });
           } catch (e) {
             FirebaseAuth.instance.currentUser?.delete().then((value) async {
               await FirebaseAuth.instance.signOut().then((value) {
                 print('Error occurred');
+                redSnak(context, 'Error occurred');
               });
             });
           }
@@ -277,5 +294,6 @@ Future signUpAndCreateUserAccount(
     });
   } on FirebaseAuthException catch (e) {
     print(e.message);
+    redSnak(context, 'Error occurred');
   }
 }

@@ -33,7 +33,7 @@ greenSnak(BuildContext context, String text) {
 }
 
 // This function displays a red SnackBar with a rounded border and custom text style.
-red(BuildContext context, String text) {
+redSnak(BuildContext context, String text) {
   return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     backgroundColor: Colors.transparent,
     duration: Duration(seconds: 3),

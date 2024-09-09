@@ -105,7 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 20,
                     ),
                     Text(
-                      'Find a plant lover friend',
+                      'Find Information And Details',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.rubik(
                         color: Constants.primaryColor,
@@ -117,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       height: 20,
                     ),
                     Text(
-                      'Are you a plant lover? Connect with other plant lovers',
+                      'Plantio App Provides Interactive, Informative, And Personalized Guidance',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.rubik(
                         color: Constants.khakiMossColor,

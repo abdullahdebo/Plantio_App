@@ -1,5 +1,6 @@
 // ignore_for_file: unused_import
 
+import 'dart:async';
 import 'dart:ffi';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,8 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: EdgeInsets.only(top: 50),
                   child: Text(
-                    'LogIn',
-                    style: GoogleFonts.rubik(
+                    'Log In',
+                    style: GoogleFonts.merriweather(
                       color: Constants.primaryColor,
                       fontSize: 50,
                       fontWeight: FontWeight.bold,
@@ -168,12 +169,12 @@ void userLogInInputValidation(
   if (logInEmailController.text.isEmpty ||
       !logInEmailController.text.contains('@') ||
       !logInEmailController.text.endsWith('.com')) {
-    brownSnak(context, 'Invalid email ☹');
+    brownSnak(context, 'Invalid Email ☹');
   }
   // Password validation
   else if (logInPassWordController.text.isEmpty ||
       logInPassWordController.text.length < 6) {
-    brownSnak(context, 'Password too short ☹');
+    brownSnak(context, 'Password Too Short ☹');
   }
   // Successful validation
   else {
@@ -182,7 +183,7 @@ void userLogInInputValidation(
 
     // Delayed execution for login
     Future.delayed(Duration(seconds: 2), () {
-      loginUser(logInEmailController, logInPassWordController);
+      loginUser(logInEmailController, logInPassWordController, context);
     });
   }
 }
@@ -190,19 +191,48 @@ void userLogInInputValidation(
 // This function logs in the user using Firebase Authentication with the provided email and password
 // and prints the user ID if login is successful.
 Future loginUser(
-    dynamic logInEmailController, dynamic logInPassWordController) async {
+  dynamic logInEmailController,
+  dynamic logInPassWordController,
+  BuildContext context,
+) async {
   try {
     await FirebaseAuth.instance
         .signInWithEmailAndPassword(
       email: logInEmailController.text,
       password: logInPassWordController.text,
     )
-        .then((value) {
-      if (value.user?.uid != null) {
-        print('UserId =  ${value.user!.uid}');
+        .then((userCredential) async {
+      var user = userCredential.user;
+      if (user != null) {
+        print('UserId =  ${user.uid}');
+        if (user.emailVerified == false) {
+          logInEmailController.clear();
+          logInPassWordController.clear();
+          userCredential.user?.sendEmailVerification();
+          // Handle unverified email case
+          print('Email is not verified');
+          await FirebaseAuth.instance.signOut().then((_) {
+            redSnak(context, 'Email is not verified ✖');
+          });
+        } else {
+          // Fetch user data from Firestore before navigating
+          DocumentSnapshot<Map<String, dynamic>> userData =
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .get();
+          greenSnak(context, 'Validation Done ✔');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HomePage(userData: userData),
+            ),
+          );
+        }
       }
     });
   } on FirebaseAuthException catch (e) {
     print(e.message);
+    redSnak(context, 'Error occurred');
   }
 }
