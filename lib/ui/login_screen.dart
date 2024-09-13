@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, unnecessary_null_comparison
 
 import 'dart:async';
 import 'dart:ffi';
@@ -91,13 +91,50 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'Forgot Password?',
-                    style: TextStyle(
-                      color: Constants.primaryColor,
-                      fontWeight: FontWeight.bold,
+                GestureDetector(
+                  onTap: () async {
+                    brownSnak(context, 'Working on it 😊');
+                    // Sends a password recovery email if the provided email is valid and exists in the database,
+                    //with error handling for invalid input or missing records.
+                    if (logInEmailController.text.isEmpty ||
+                        !logInEmailController.text.contains('@') ||
+                        !logInEmailController.text.endsWith('.com')) {
+                      brownSnak(context, 'Invalid Email ☹');
+                    } else {
+                      await FirebaseFirestore.instance
+                          .collection('UserAccounts')
+                          .where('UserEmail',
+                              isEqualTo: logInEmailController.text)
+                          .get()
+                          .then((whereResult) async {
+                        if (whereResult == null && whereResult.docs.isEmpty) {
+                          redSnak(
+                              context, 'There is no record for this email ❌');
+                        } else {
+                          try {
+                            await FirebaseAuth.instance
+                                .sendPasswordResetEmail(
+                                    email: logInEmailController.text)
+                                .then((metaData) {
+                              orangeSnak(
+                                  context, 'Reset password email sent ✅');
+                              logInPassWordController.clear();
+                            });
+                          } catch (e) {
+                            blackSnak(context, 'Error ❌ ');
+                          }
+                        }
+                      });
+                    }
+                  },
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: Constants.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
