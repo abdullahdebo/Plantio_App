@@ -255,7 +255,7 @@ Future loginUser(
           // Fetch user data from Firestore before navigating
           DocumentSnapshot<Map<String, dynamic>> userData =
               await FirebaseFirestore.instance
-                  .collection('users')
+                  .collection('UserAccounts')
                   .doc(user.uid)
                   .get();
           greenSnak(context, 'Validation Done ✔');
