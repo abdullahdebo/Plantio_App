@@ -250,10 +250,12 @@ Future signUpAndCreateUserAccount(
     )
         .then((userCredential) async {
       if (userCredential.user != null) {
+        print(userCredential.user!.uid);
         await userCredential.user
             ?.sendEmailVerification()
             .then((metaData) async {
           try {
+            print('--- Saving to DB');
             await FirebaseFirestore.instance
                 .collection('UserAccounts')
                 .doc(userCredential.user?.uid)
@@ -265,10 +267,13 @@ Future signUpAndCreateUserAccount(
               'AccountCreatedDateTime': DateTime.now(),
               'IsEmailVerified': false,
             }).then((value) async {
+              print('--- Saved user to DB Successfully');
               userData = await FirebaseFirestore.instance
                   .collection('UserAccounts')
                   .doc(userCredential.user?.uid)
                   .get();
+              print('--- Getting user from DB');
+              print(userData.data());
             });
             signUpFirstNameController.clear();
             signUpLastNameController.clear();
