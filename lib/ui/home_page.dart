@@ -1,5 +1,7 @@
 // ignore_for_file: unused_local_variable, sized_box_for_whitespace
 
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -82,10 +84,12 @@ class _HomePageState extends State<HomePage> {
               Center(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ScanPage(),
+                        builder: (_) => ScanPage(
+                          userData: widget.userData,
+                        ),
                       ),
                     );
                   },
