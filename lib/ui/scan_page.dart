@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
@@ -171,10 +172,7 @@ class _ScanPageState extends State<ScanPage> {
     context.loaderOverlay.show();
     if (selectedImage != null) {
       try {
-        var uploadTask = await FirebaseStorage.instance
-            .ref()
-            .child('images/${selectedImage!.path.split('/').last}')
-            .putFile(selectedImage!);
+        var uploadTask = await FirebaseStorage.instance.ref().child('images/${selectedImage!.path.split('/').last}').putFile(selectedImage!);
         var downloadUrl = await uploadTask.ref.getDownloadURL();
         print('File uploaded to: $downloadUrl');
         setState(() {
@@ -194,141 +192,144 @@ class _ScanPageState extends State<ScanPage> {
 
   Future processImage() async {
     context.loaderOverlay.show();
-    // context.loaderOverlay.show();
     try {
       await uploadToFireBaseStorage();
       if (imageURl != 'NONE') {
         // Create to DB
-        DocumentReference<Map<String, dynamic>> unprocessedImageDoc =
-            await FirebaseFirestore.instance
-                .collection('RecognizedPlants')
-                .add({
+        DocumentReference<Map<String, dynamic>> unprocessedImageDoc = await FirebaseFirestore.instance.collection('RecognizedPlants').add({
           'UserId': widget.userData.data()!['UserId'],
           'UnprocessedImageURL': imageURl,
-          'Confidence': 0.0,
-          'Tag': null,
           'Details': 'No details found',
           'Date': DateTime.now(),
         });
-        // Fire API call and collect the best confidence value
-        await predictImage(
-                'https://m.media-amazon.com/images/I/61HCpPU1P7L._AC_UF1000,1000_QL80_.jpg')
-            .then((listTag) {
-          if (listTag.isNotEmpty) {
-            // Re-save the name of the plant
-            unprocessedImageDoc.update({
-              'Tag': listTag[0]['tag'],
-              'Confidence': listTag[0]['confidence']
-            }).then((meta) async {
-              // Fire 2nd API call to collect the plant details
-              await getImageDetails(listTag[0]['tag']).then((imageDetails) {
-                if (imageDetails != null) {
-                  unprocessedImageDoc
-                      .update({'Details': imageDetails}).then((meta) {
-                    greenSnak(context, 'Plant recognized successfully 👌');
-                    setState(() {
-                      selectedImage = null;
-                      imageURl = 'NONE';
+        // Decode Image to Base-64
+        List<int> imageBytes = await selectedImage!.readAsBytes();
+        var base64Image = base64Encode(imageBytes);
+        print('ImageB64: $base64Image');
+
+        // Predict Image
+        await predictImage(base64Image).then((prediction) async {
+          if (prediction != null) {
+            if (prediction['result'] != null && prediction['result']['classification'] != null && prediction['result']['classification']['suggestions'] != null) {
+              Map<String, dynamic> plantSuggestions = prediction['result']['classification']['suggestions'][0];
+              // Apply Plant Search by Name
+              await getImageSearch(plantSuggestions['name']).then((plantSearch) async {
+                if (plantSearch != null) {
+                  if (plantSearch['entities'] != null) {
+                    await getImageSearchDetails(plantSearch['entities'][0]['access_token']).then((predictedPlantDetails) async {
+                      if (predictedPlantDetails != null) {
+                        unprocessedImageDoc.update({
+                          'Details': predictedPlantDetails,
+                        }).then((meta) async {
+                          unprocessedImageDoc.get().then((predictedPlantDetails) {
+                            context.loaderOverlay.hide();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PlantDetails(predictedImage: predictedPlantDetails),
+                              ),
+                            );
+                          });
+                        });
+                      } else {
+                        context.loaderOverlay.hide();
+                        redSnak(context, 'No plant details found');
+                      }
                     });
-                  });
-                  unprocessedImageDoc.get().then((imageDetails) {
+                  } else {
                     context.loaderOverlay.hide();
-                    // context.loaderOverlay.hide();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PlantDetails(proccessed_image: imageDetails),
-                      ),
-                    );
-                  });
-                } else {
-                  context.loaderOverlay.hide();
-                  // context.loaderOverlay.hide();
-                  unprocessedImageDoc.delete().then((meta) {
-                    redSnak(context, 'No recognized plants found ');
-                    setState(() {
-                      selectedImage = null;
-                      imageURl = 'NONE';
-                    });
-                  });
+                    redSnak(context, 'No plant found in the image');
+                  }
                 }
               });
-            });
+            } else {
+              context.loaderOverlay.hide();
+              redSnak(context, 'No plant found in the image');
+            }
           } else {
-            // context.loaderOverlay.hide();
-            // Delete the unprocessed image and remove the variable values
-            unprocessedImageDoc.delete().then((meta) {
-              redSnak(context, 'No recognized plants found');
-              setState(() {
-                selectedImage = null;
-                imageURl = 'NONE';
-              });
-            });
+            context.loaderOverlay.hide();
+            redSnak(context, 'Image Cannot be predicted ☹️');
           }
         });
       } else {
         context.loaderOverlay.hide();
-        // context.loaderOverlay.hide();
         redSnak(context, 'Error occurred while processing image');
       }
     } catch (e) {
       context.loaderOverlay.hide();
-      // context.loaderOverlay.hide();
       redSnak(context, 'Error occurred while processing image');
     }
   }
 
-  Future<List<dynamic>> predictImage(String imageUrl) async {
+  Future<Map<String, dynamic>?> predictImage(String imageUrlB64) async {
     var headers = {
-      'Authorization':
-          'Basic YWNjXzRiZDY3MzFmNDAyYjViODpmZjEwM2M5Y2U1Yzg4YWY3NWY2YjljNDQ2ZWFkM2MwMQ=='
+      'Content-Type': 'application/json',
+      'Api-Key': '4LdLuJXhFGTSRTgJgkKJj3WfUh0QO9EyqtIhb1R2Qjr1bUa1mX'
+    };
+    var data = {
+      'images': [
+        'data:image/png;base64,$imageUrlB64'
+      ],
+      'similar_images': true
     };
     var dio = Dio();
     var response = await dio.request(
-      'https://api.imagga.com/v2/tags?image_url=$imageUrl',
+      'https://plant.id/api/v3/identification',
+      options: Options(
+        method: 'POST',
+        headers: headers,
+      ),
+      data: data,
+    );
+    print(response);
+
+    if (response.statusCode == 201) {
+      print(response.data);
+      return response.data;
+    } else {
+      print(response.statusMessage);
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getImageSearch(String imageName) async {
+    var headers = {
+      'Api-Key': '4LdLuJXhFGTSRTgJgkKJj3WfUh0QO9EyqtIhb1R2Qjr1bUa1mX'
+    };
+    var dio = Dio();
+    var response = await dio.request(
+      'https://plant.id/api/v3/kb/plants/name_search?q=$imageName&limit=1',
       options: Options(
         method: 'GET',
         headers: headers,
       ),
     );
     if (response.statusCode == 200) {
-      var tags = response.data['result']['tags'];
-      // Sort tags by confidence in descending order, with explicit casting
-      tags.sort(
-          (a, b) => (b['confidence'] as num).compareTo(a['confidence'] as num));
-      // Extract the top 1 tags with their confidence and "en" tag
-      var topTags = tags.take(1).map((tag) {
-        return {
-          'confidence': tag['confidence'],
-          'tag': tag['tag']['en'],
-        };
-      }).toList();
-      print(topTags);
-      return topTags;
+      return response.data;
     } else {
       print(response.statusMessage);
-      return [];
+      return null;
     }
   }
 
-  Future getImageDetails(String tagName) async {
+  Future<Map<String, dynamic>?> getImageSearchDetails(String plantAccessToken) async {
+    var headers = {
+      'Api-Key': '4LdLuJXhFGTSRTgJgkKJj3WfUh0QO9EyqtIhb1R2Qjr1bUa1mX'
+    };
     var dio = Dio();
     var response = await dio.request(
-      'https://trefle.io/api/v1/plants?token=jxyYWiMGOndlJAs9EVbEaciEIXKEuL-_kYySsKFgm6s&filter[common_name]=$tagName',
+      'https://plant.id/api/v3/kb/plants/$plantAccessToken?details=common_names,url,description,taxonomy,rank,gbif_id,inaturalist_id,image,synonyms,edible_parts,watering,propagation_methods',
       options: Options(
         method: 'GET',
+        headers: headers,
       ),
     );
 
     if (response.statusCode == 200) {
-      if (response.data['data'].isNotEmpty) {
-        return response.data['data'][0];
-      } else {
-        return null;
-      }
+      return response.data;
     } else {
       print(response.statusMessage);
+      return null;
     }
   }
 }

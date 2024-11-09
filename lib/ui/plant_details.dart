@@ -1,17 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:plantio_app/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PlantDetails extends StatefulWidget {
-  final DocumentSnapshot<Map<String, dynamic>> proccessed_image;
-  const PlantDetails({super.key, required this.proccessed_image});
+  final DocumentSnapshot<Map<String, dynamic>> predictedImage;
+  const PlantDetails({super.key, required this.predictedImage});
 
   @override
   State<PlantDetails> createState() => _PlantDetailsState();
 }
 
 class _PlantDetailsState extends State<PlantDetails> {
+  Future<void> launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  bool askGPT = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,169 +43,148 @@ class _PlantDetailsState extends State<PlantDetails> {
       ),
       backgroundColor: Constants.blanketColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              child: ClipRRect(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ListView(
+            children: [
+              ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.network(
-                  widget.proccessed_image.data()!['UnprocessedImageURL'],
-                  height: 450,
+                  widget.predictedImage.data()!['UnprocessedImageURL'],
+                  height: 300,
                   width: double.infinity,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fitHeight,
                 ),
               ),
-            ),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Constants.blanketColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+              SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    widget.predictedImage.data()!['Details']['name'].toString(),
+                    style: GoogleFonts.merriweather(
+                      fontSize: 25,
+                      color: Constants.primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  Text(
+                    '   ${widget.predictedImage.data()!['Details']['rank']}',
+                    style: GoogleFonts.merriweather(
+                      fontSize: 17,
+                      color: Constants.primaryColor,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Table(
+                border: TableBorder.all(color: Constants.primaryColor, width: 1),
+                columnWidths: const {
+                  0: FlexColumnWidth(1.2),
+                  1: FlexColumnWidth(2),
+                },
+                children: [
+                  _buildTableRow('Family:', widget.predictedImage.data()!['Details']['taxonomy']['family']),
+                  _buildTableRow('Class:', widget.predictedImage.data()!['Details']['taxonomy']['class']),
+                  _buildTableRow('Genus:', widget.predictedImage.data()!['Details']['taxonomy']['genus']),
+                  _buildTableRow('Kingdom:', widget.predictedImage.data()!['Details']['taxonomy']['kingdom']),
+                  _buildTableRow('Order:', widget.predictedImage.data()!['Details']['taxonomy']['order']),
+                  _buildTableRow('Phylum:', widget.predictedImage.data()!['Details']['taxonomy']['phylum']),
+                ],
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Want more information ? ',
+                style: GoogleFonts.merriweather(
+                  fontSize: 20,
+                  color: Constants.primaryColor,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.proccessed_image
-                            .data()!['Tag']
-                            .toString()
-                            .toUpperCase(),
-                        style: GoogleFonts.merriweather(
-                          fontSize: 25,
-                          color: Constants.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Confidence: ${widget.proccessed_image.data()!['Confidence'].toStringAsFixed(2)}%',
-                        style: GoogleFonts.rubik(
-                          fontSize: 18,
-                          color: Constants.primaryColor,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                      Divider(),
-                      SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Text(
-                            'Family: ',
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.proccessed_image.data()!['Details']
-                                ['family'],
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            'Rank: ',
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.proccessed_image.data()!['Details']['rank'],
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            'Scientific Name: ',
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.proccessed_image.data()!['Details']
-                                ['scientific_name'],
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            'Year: ',
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.proccessed_image
-                                .data()!['Details']['year']
-                                .toString(),
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            'Bibliography: ',
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            widget.proccessed_image
-                                .data()!['Details']['bibliography']
-                                .toString(),
-                            style: GoogleFonts.merriweather(
-                              fontSize: 16,
-                              color: Constants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
+              ),
+              SizedBox(height: 10),
+              Visibility(
+                visible: !askGPT,
+                child: Text(
+                  'Provide more information on ${widget.predictedImage.data()!['Details']['name']} ${widget.predictedImage.data()!['Details']['rank']} with at least 100 words.',
+                  style: GoogleFonts.merriweather(
+                    fontSize: 18,
+                    color: Constants.primaryColor,
                   ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 10),
+              InkWell(
+                child: Container(
+                  height: 45,
+                  width: double.maxFinite,
+                  decoration: BoxDecoration(
+                    color: Constants.primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black, width: 1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          askGPT == true ? 'Generate message for ChatGPT  ' : 'Go to ChatGPT',
+                          style: GoogleFonts.merriweather(
+                            fontSize: 19,
+                            color: Constants.blanketColor,
+                          ),
+                        ),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedChatGpt,
+                          color: Constants.blanketColor,
+                          size: 30.0,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                onTap: () async {
+                  setState(() {
+                    askGPT = !askGPT;
+                  });
+                  Clipboard.setData(ClipboardData(text: 'Provide more information on ${widget.predictedImage.data()!['Details']['name']} ${widget.predictedImage.data()!['Details']['rank']} with at least 100 words.'));
+                  launchURL('https://chatgpt.com/');
+                },
+              )
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            label,
+            style: GoogleFonts.merriweather(
+              fontSize: 20,
+              color: Constants.primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            value,
+            style: GoogleFonts.merriweather(
+              fontSize: 19,
+              color: Constants.primaryColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
