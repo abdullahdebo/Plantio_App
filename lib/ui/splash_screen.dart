@@ -1,8 +1,12 @@
 // ignore_for_file: unused_import, override_on_non_overriding_member
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:plantio_app/ui/home_page.dart';
 import 'package:plantio_app/ui/onboarding_screen.dart';
 import '../constants.dart';
 
@@ -16,16 +20,39 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    navigatorAfterDuration();
+    navigateAfterDuration();
     super.initState();
   }
 
-// This Function For Delayed The Splash Screen After That We are Going To OnboardingScreen
-  void navigatorAfterDuration() {
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => OnboardingScreen()));
-    });
+//This function checks Firebase for a logged-in user; if found, it navigates to HomePage; otherwise, it directs to OnboardingScreen.
+  void navigateAfterDuration() async {
+    User? user = await FirebaseAuth.instance.currentUser;
+    if (user != null && user.uid.isNotEmpty == true) {
+      Future.delayed(Duration(seconds: 4), () async {
+        await FirebaseFirestore.instance
+            .collection('UserAccounts')
+            .doc(user.uid)
+            .get()
+            .then((userDoc) async {
+          if (userDoc.id.isNotEmpty == true &&
+              userDoc.data()?.isNotEmpty == true) {
+            Navigator.of(context).pushReplacement(CupertinoPageRoute(
+                builder: (BuildContext context) =>
+                    HomePage(userData: userDoc)));
+          } else {
+            await FirebaseAuth.instance.signOut().then((value) {
+              Navigator.of(context).pushReplacement(CupertinoPageRoute(
+                  builder: (BuildContext context) => OnboardingScreen()));
+            });
+          }
+        });
+      });
+    } else {
+      Future.delayed(Duration(seconds: 4), () {
+        Navigator.of(context).pushReplacement(CupertinoPageRoute(
+            builder: (BuildContext context) => OnboardingScreen()));
+      });
+    }
   }
 
   @override

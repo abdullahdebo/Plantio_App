@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plantio_app/constants.dart';
+import 'package:plantio_app/ui/profile.dart';
 import 'package:plantio_app/ui/scan_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -58,21 +59,30 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Row(
                         children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.search,
-                              color: Constants.primaryColor,
-                              size: 37,
-                            ),
-                            onPressed: () {},
-                          ),
+                          // IconButton(
+                          //   icon: Icon(
+                          //     Icons.search,
+                          //     color: Constants.primaryColor,
+                          //     size: 37,
+                          //   ),
+                          //   onPressed: () {},
+                          // ),
                           IconButton(
                             icon: Icon(
                               Icons.person,
                               color: Constants.primaryColor,
                               size: 37,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => Profile(
+                                    userData: widget.userData,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
