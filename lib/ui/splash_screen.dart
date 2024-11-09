@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
 //This function checks Firebase for a logged-in user; if found, it navigates to HomePage; otherwise, it directs to OnboardingScreen.
   void navigateAfterDuration() async {
-    User? user = await FirebaseAuth.instance.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;
     if (user != null && user.uid.isNotEmpty == true) {
       Future.delayed(Duration(seconds: 4), () async {
         await FirebaseFirestore.instance

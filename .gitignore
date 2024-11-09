@@ -42,3 +42,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 *.lock
+*.cc
+*.cmake
+macos/Flutter/GeneratedPluginRegistrant.swift
