@@ -29,18 +29,18 @@ class _PlantDetailsState extends State<PlantDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        foregroundColor: Constants.primaryColor,
-        title: Text(
-          'Plant Details',
-          style: GoogleFonts.merriweather(
-            fontSize: 25,
-            color: Constants.primaryColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Constants.blanketColor,
-      ),
+      // appBar: AppBar(
+      //   foregroundColor: Constants.primaryColor,
+      //   title: Text(
+      //     'Plant Details',
+      //     style: GoogleFonts.merriweather(
+      //       fontSize: 25,
+      //       color: Constants.primaryColor,
+      //       fontWeight: FontWeight.bold,
+      //     ),
+      //   ),
+      //   backgroundColor: Constants.blanketColor,
+      // ),
       backgroundColor: Constants.blanketColor,
       body: SafeArea(
         child: Padding(
@@ -147,12 +147,53 @@ class _PlantDetailsState extends State<PlantDetails> {
                 ),
                 onTap: () async {
                   setState(() {
-                    askGPT = !askGPT;
+                    askGPT = false;
                   });
                   Clipboard.setData(ClipboardData(text: 'Provide more information on ${widget.predictedImage.data()!['Details']['name']} ${widget.predictedImage.data()!['Details']['rank']} with at least 100 words.'));
                   launchURL('https://chatgpt.com/');
                 },
-              )
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              InkWell(
+                child: Container(
+                  height: 45,
+                  width: double.maxFinite,
+                  decoration: BoxDecoration(
+                    color: Constants.autumnFernColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.black, width: 1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedCancelSquare,
+                          color: Constants.blanketColor,
+                          size: 28.0,
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          'Close Prediction Sheet',
+                          style: GoogleFonts.merriweather(
+                            fontSize: 19,
+                            color: Constants.blanketColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                onTap: () => Navigator.of(context).pop(),
+              ),
+              SizedBox(
+                height: 30,
+              ),
             ],
           ),
         ),

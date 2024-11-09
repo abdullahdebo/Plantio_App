@@ -44,7 +44,7 @@ class _ProfileState extends State<Profile> {
           'Profile',
           style: GoogleFonts.merriweather(
             fontSize: 35,
-            color: Constants.autumnFernColor,
+            color: Constants.primaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -55,8 +55,7 @@ class _ProfileState extends State<Profile> {
           children: [
             CircleAvatar(
               radius: 100,
-              backgroundImage: NetworkImage(
-                  'https://i.pinimg.com/736x/c0/74/9b/c0749b7cc401421662ae901ec8f9f660.jpg'),
+              backgroundImage: NetworkImage('https://i.pinimg.com/736x/c0/74/9b/c0749b7cc401421662ae901ec8f9f660.jpg'),
             ),
             SizedBox(height: 20),
 
@@ -66,7 +65,7 @@ class _ProfileState extends State<Profile> {
               children: [
                 Icon(
                   Icons.person,
-                  color: Constants.autumnFernColor,
+                  color: Constants.primaryColor,
                   size: 30,
                 ),
                 SizedBox(width: 10),
@@ -74,7 +73,7 @@ class _ProfileState extends State<Profile> {
                   userData.data()?['UserFirstName']?.toString() ?? 'User',
                   style: GoogleFonts.merriweather(
                     fontSize: 28,
-                    color: Constants.autumnFernColor,
+                    color: Constants.primaryColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -89,16 +88,15 @@ class _ProfileState extends State<Profile> {
               children: [
                 Icon(
                   Icons.email,
-                  color: Constants.autumnFernColor,
+                  color: Constants.primaryColor,
                   size: 25,
                 ),
                 SizedBox(width: 10),
                 Text(
-                  userData.data()?['UserEmail']?.toString() ??
-                      'Email not available',
+                  userData.data()?['UserEmail']?.toString() ?? 'Email not available',
                   style: GoogleFonts.merriweather(
                     fontSize: 18,
-                    color: Constants.autumnFernColor.withOpacity(0.8),
+                    color: Constants.primaryColor.withOpacity(0.8),
                   ),
                 ),
               ],
@@ -108,7 +106,7 @@ class _ProfileState extends State<Profile> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                backgroundColor: Constants.autumnFernColor,
+                backgroundColor: Constants.primaryColor,
               ),
               onPressed: () {
                 signOut(context);
