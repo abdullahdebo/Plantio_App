@@ -45,3 +45,4 @@ app.*.map.json
 *.cc
 *.cmake
 macos/Flutter/GeneratedPluginRegistrant.swift
+linux/flutter/generated_plugin_registrant.h
